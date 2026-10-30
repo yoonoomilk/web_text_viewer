@@ -61,7 +61,7 @@ window.addEventListener("pageshow", () => {
 });
 
 document.addEventListener("keydown", (e) => {
-  if (filesInput.files.length === 0 || e.code === "KeyR") filesInput.click();
+  if (filesInput.files.length === 0) filesInput.click();
   else if (e.code === "ArrowLeft" || e.code === "KeyJ") flipPage(page - 1);
   else if (e.code === "ArrowRight" || e.code === "KeyL") flipPage(page + 1);
 });
