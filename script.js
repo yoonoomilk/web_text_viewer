@@ -66,16 +66,16 @@ document.addEventListener("keydown", (e) => {
   else if (e.code === "ArrowRight" || e.code === "KeyL") flipPage(page + 1);
 });
 
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  if (filesInput.files.length === 0) return;
+  let newPage = parseInt(prompt("goto", page), 10);
+  flipPage(newPage);
+});
+
 if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   document.addEventListener("click", (e) => {
     if (filesInput.files.length === 0) filesInput.click();
-  });
-
-  document.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-    if (filesInput.files.length === 0) return;
-    let newPage = parseInt(prompt("goto", page), 10);
-    flipPage(newPage);
   });
   
   let startX = 0;
