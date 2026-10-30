@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko" oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <input type="file" id="files" accept=".txt, .html, .zip" multiple hidden>
+  <div id="container">
+    <div id="status">- / -화</div>
+    <div id="content"></div>
+    <div id="status">&nbsp;</div>
+  </div>
+  <script src="jszip.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
