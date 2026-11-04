@@ -7,27 +7,6 @@ let textArray = [["text", "file.txt"]];
 let page = 1;
 let fileName = "";
 
-function hashing(str) {
-  let hash = 2166136261;
-  for (let i = 0;i < str.length;i++) {
-    hash ^= str.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(16);
-}
-
-function legacyBookmark() {
-  currentHash = hashing(textArray.map(([text]) => text).join(""));
-  if (`bookmark_${currentHash}` in localStorage) {
-    localStorage.setItem(`bookmark_${fileName}`, localStorage.getItem(`bookmark_${currentHash}`));
-    localStorage.removeItem(`bookmark_${currentHash}`);
-  }
-  if (`bookmark_${fileName}.zip` in localStorage) {
-    localStorage.setItem(`bookmark_${fileName}`, localStorage.getItem(`bookmark_${fileName}.zip`));
-    localStorage.removeItem(`bookmark_${fileName}.zip`);
-  }
-}
-
 function saveBookmark() {
   if (fileName) {
     if (page >= textArray.length - 1) localStorage.removeItem(`bookmark_${fileName}`);
@@ -85,7 +64,6 @@ fileInput.addEventListener("change", async () => {
     textArray.push([content, filename]);
   }
   fileName = file.name.replace(/\.zip(?!.*\.zip)/, "");
-  legacyBookmark();
   page = loadBookmark();
   flipPage();
 });
