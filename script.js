@@ -1,10 +1,32 @@
+const title = document.querySelector("title");
 const fileInput = document.querySelector("#file");
 const status = document.querySelector("#status");
 const content = document.querySelector("#content");
 
 let textArray = [["text", "file.txt"]];
 let page = 1;
-let fileName = ""
+let fileName = "";
+
+function hashing(str) {
+  let hash = 2166136261;
+  for (let i = 0;i < str.length;i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16);
+}
+
+function legacyBookmark() {
+  currentHash = hashing(textArray.map(([text]) => text).join(""));
+  if (`bookmark_${currentHash}` in localStorage) {
+    localStorage.setItem(`bookmark_${fileName}`, localStorage.getItem(`bookmark_${currentHash}`));
+    localStorage.removeItem(`bookmark_${currentHash}`);
+  }
+  if (`bookmark_${fileName}.zip` in localStorage) {
+    localStorage.setItem(`bookmark_${fileName}`, localStorage.getItem(`bookmark_${fileName}.zip`));
+    localStorage.removeItem(`bookmark_${fileName}.zip`);
+  }
+}
 
 function saveBookmark() {
   if (fileName) {
@@ -14,12 +36,13 @@ function saveBookmark() {
 }
 
 function loadBookmark() {
-  if (fileName) return parseInt(localStorage.getItem(`bookmark_${fileName}`), 10) || 1;
+  if (fileName) return parseInt(localStorage.getItem(`bookmark_${fileName}`) || "1", 10);
   return 1;
 }
 
 function updatePage() {
   if (fileInput.files.length === 0) {
+    title.innerText = "viewer";
     status.innerText = "저장된 책갈피 목록";
     let bookmarks = [];
     for (const key of Object.keys(localStorage)) {
@@ -36,6 +59,7 @@ function updatePage() {
     });
     content.innerText = text;
   } else {
+    title.innerText = `viewer - ${fileName}`;
     status.innerText = `${page} / ${textArray.length - 1}`;
     content.innerText = textArray[page][0];
   }
@@ -60,7 +84,8 @@ fileInput.addEventListener("change", async () => {
     const content = await zipEntry.async("text");
     textArray.push([content, filename]);
   }
-  fileName = file.name;
+  fileName = file.name.replace(/\.zip(?!.*\.zip)/, "");
+  legacyBookmark();
   page = loadBookmark();
   flipPage();
 });
