@@ -1,11 +1,10 @@
 const CACHE_NAME = "viewer-offline-cache";
 
 const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./script.js",
-  "./jszip.min.js"
+  "index.html",
+  "style.css",
+  "script.js",
+  "jszip.min.js"
 ];
 
 self.addEventListener("install", (event) => {
