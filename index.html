@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <input type="file" id="files" accept=".txt, .html, .zip" multiple hidden>
+  <input type="file" id="file" accept=".zip" hidden>
   <div id="container">
     <div id="status">- / -화</div>
     <div id="content"></div>
@@ -17,6 +17,13 @@
   </div>
   <script src="jszip.min.js"></script>
   <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 
 </html>

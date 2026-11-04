@@ -7,10 +7,6 @@ body {
   padding: 0 16px;
 }
 
-#container {
-  display: none;
-}
-
 #status {
   text-align: center;
   margin: 50px;
