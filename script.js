@@ -73,7 +73,7 @@ fileInput.addEventListener("change", async () => {
       await book.ready;
       for (const item of book.spine.spineItems) {
         const doc = await item.load(book.load.bind(book));
-        const raw = doc.innerText;
+        const raw = doc.innerHTML.replaceAll(/<[^>]*>/g, "\n");
         const text = raw.replaceAll(/\n\s*/g, "\n\n");
         textArray.push([text, item.href.split("/").pop()]);
         item.unload();
