@@ -4,7 +4,8 @@ const FILES_TO_CACHE = [
   "index.html",
   "style.css",
   "script.js",
-  "jszip.min.js"
+  "jszip.min.js",
+  "epub.min.js"
 ];
 
 self.addEventListener("install", (event) => {
