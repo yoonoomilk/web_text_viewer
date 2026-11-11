@@ -56,14 +56,30 @@ fileInput.addEventListener("change", async () => {
   textArray = [["text", "file.txt"]];
   page = 1;
   const file = fileInput.files[0];
-  const zip = new JSZip();
-  const zipContent = await zip.loadAsync(file);
-  for (const [filename, zipEntry] of Object.entries(zipContent.files)) {
-    if (zipEntry.dir) continue;
-    const content = await zipEntry.async("text");
-    textArray.push([content, filename]);
+  fileName = file.name.replace(/\.[^/.]+$/, "");
+  const fileExt = file.name.match(/\.([^.]+)$/)?.[1] ?? "";
+  switch (fileExt) {
+    case "zip":
+      const zip = new JSZip();
+      const zipContent = await zip.loadAsync(file);
+      for (const [filename, zipEntry] of Object.entries(zipContent.files)) {
+        if (zipEntry.dir) continue;
+        const content = await zipEntry.async("text");
+        textArray.push([content, filename]);
+      }
+      break;
+    case "epub":
+      const book = ePub(await file.arrayBuffer());
+      await book.ready;
+      for (const item of book.spine.spineItems) {
+        const doc = await item.load(book.load.bind(book));
+        const raw = doc.innerText;
+        const text = raw.replaceAll(/\n\s*/g, "\n\n");
+        textArray.push([text, item.href.split("/").pop()]);
+        item.unload();
+      }
+      break;
   }
-  fileName = file.name.replace(/\.zip(?!.*\.zip)/, "");
   page = loadBookmark();
   flipPage();
 });
@@ -73,7 +89,7 @@ window.addEventListener("pageshow", () => {
 });
 
 document.addEventListener("keydown", (e) => {
-  if (fileInput.files.length === 0) fileInput.click();
+  if (fileInput.files.length === 0 && e.key.length === 1) fileInput.click();
   else if (e.code === "ArrowLeft" || e.code === "KeyJ") flipPage(page - 1);
   else if (e.code === "ArrowRight" || e.code === "KeyL") flipPage(page + 1);
 });
