@@ -49,7 +49,7 @@ function flipPage(newPage = page) {
   page = newPage;
   updatePage();
   window.scrollTo(0, 0);
-  saveBookmark();
+  if (page !== 1) saveBookmark();
 }
 
 fileInput.addEventListener("change", async () => {
