@@ -1,4 +1,4 @@
-const CACHE_NAME = "viewer-offline-cache";
+Const CACHE_NAME = "cache-v1";
 
 const FILES_TO_CACHE = [
   "index.html",
@@ -17,16 +17,32 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request)
-      .then(async (response) => {
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then(async (response) => {
         const cache = await caches.open(CACHE_NAME);
         cache.put(event.request, response.clone());
         return response;
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      });
+    })
   );
 });
