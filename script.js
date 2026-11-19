@@ -9,7 +9,7 @@ let fileName = "";
 
 function saveBookmark() {
   if (fileName) {
-    if (page >= textArray.length - 1) localStorage.removeItem(`bookmark_${fileName}`);
+    if (page == 1 || page >= textArray.length - 1) localStorage.removeItem(`bookmark_${fileName}`);
     else localStorage.setItem(`bookmark_${fileName}`, page);
   }
 }
@@ -54,7 +54,7 @@ function flipPage(newPage = page) {
   page = newPage;
   updatePage();
   window.scrollTo(0, 0);
-  if (page !== 1) saveBookmark();
+  saveBookmark();
 }
 
 fileInput.addEventListener("change", async () => {
@@ -87,7 +87,7 @@ fileInput.addEventListener("change", async () => {
     case "json":
       const reader = new FileReader();
       reader.onload = () => {
-        JSON.parse(reader.result).forEach(({fileName, page}) => {
+        JSON.parse(reader.result).forEach(({ fileName, page }) => {
           const key = `bookmark_${fileName}`;
           const saved = Number(localStorage.getItem(key)) || 1;
           console.log(`${key}: ${page}, ${saved}`);
@@ -133,7 +133,7 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   document.addEventListener("click", (e) => {
     if (fileInput.files.length === 0) fileInput.click();
   });
-  
+
   let startX = 0, startY = 0;
 
   document.addEventListener("touchstart", (e) => {
@@ -144,7 +144,7 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   document.addEventListener("touchend", (e) => {
     if (fileInput.files.length === 0) return;
     const diffX = e.changedTouches[0].clientX - startX,
-          diffY = e.changedTouches[0].clientY - startY;
+      diffY = e.changedTouches[0].clientY - startY;
     if (Math.abs(diffX) > 180 && Math.abs(diffY) < 100) {
       if (diffX > 0) flipPage(page - 1);
       else flipPage(page + 1);
