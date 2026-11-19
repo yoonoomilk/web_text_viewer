@@ -15,23 +15,28 @@ function saveBookmark() {
 }
 
 function loadBookmark() {
-  if (fileName) return parseInt(localStorage.getItem(`bookmark_${fileName}`) || "1", 10);
+  if (fileName) return Number(localStorage.getItem(`bookmark_${fileName}`)) || 1;
   return 1;
 }
 
+function getBookmarks() {
+  let bookmarks = [];
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith("bookmark_")) {
+      let fName = key.replace("bookmark_", "");
+      let pNum = localStorage.getItem(key);
+      bookmarks.push({ fileName: fName, page: pNum });
+    }
+  }
+  bookmarks.sort((a, b) => a.fileName.localeCompare(b.fileName));
+  return bookmarks;
+}
+
 function updatePage() {
-  if (fileInput.files.length === 0) {
+  if (textArray.length === 1) {
     title.innerText = "viewer";
     status.innerText = "저장된 책갈피 목록";
-    let bookmarks = [];
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith("bookmark_")) {
-        let fName = key.replace("bookmark_", "");
-        let pNum = localStorage.getItem(key);
-        bookmarks.push({ fileName: fName, page: pNum });
-      }
-    }
-    bookmarks.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    let bookmarks = getBookmarks();
     let text = "";
     bookmarks.forEach((b, idx) => {
       text += `${b.fileName} - ${b.page}화\n`;
@@ -79,26 +84,49 @@ fileInput.addEventListener("change", async () => {
         item.unload();
       }
       break;
+    case "json":
+      const reader = new FileReader();
+      reader.onload = () => {
+        JSON.parse(reader.result).forEach(({fileName, page}) => {
+          const key = `bookmark_${fileName}`;
+          const saved = Number(localStorage.getItem(key)) || 1;
+          console.log(`${key}: ${page}, ${saved}`);
+          if (Number(page) > saved) localStorage.setItem(key, page);
+        });
+        updatePage();
+      };
+      reader.readAsText(file);
+      break
   }
   page = loadBookmark();
   flipPage();
 });
 
 window.addEventListener("pageshow", () => {
-  if (fileInput.files.length) fileInput.dispatchEvent(new Event("change"));
+  if (textArray.length !== 1) fileInput.dispatchEvent(new Event("change"));
 });
 
 document.addEventListener("keydown", (e) => {
-  if (fileInput.files.length === 0 && e.key.length === 1) fileInput.click();
+  if (textArray.length === 1 && e.key.length === 1) fileInput.click();
   else if (e.code === "ArrowLeft" || e.code === "KeyJ") flipPage(page - 1);
   else if (e.code === "ArrowRight" || e.code === "KeyL") flipPage(page + 1);
 });
 
 document.addEventListener("contextmenu", (e) => {
   e.preventDefault();
-  if (fileInput.files.length === 0) return;
-  let newPage = parseInt(prompt("goto", page), 10);
-  flipPage(newPage);
+  if (textArray.length === 1) {
+    let bookmarks = getBookmarks();
+    const blob = new Blob([JSON.stringify(bookmarks)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "web_text_viewer_data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  } else {
+    let newPage = parseInt(prompt("goto", page), 10);
+    flipPage(newPage);
+  }
 });
 
 if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
