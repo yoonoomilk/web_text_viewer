@@ -1,7 +1,7 @@
 {
   "name": "Web Text Viewer",
   "short_name": "WVT",
-  "start_url": "./",
+  "start_url": "/web_text_viewer/",
   "display": "standalone",
   "icons": [
     {
