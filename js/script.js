@@ -1,31 +1,28 @@
 const title = document.querySelector("title");
 const fileInput = document.querySelector("#file");
-const status = document.querySelector("#status");
+const subtitle = document.querySelector("#subtitle");
 const content = document.querySelector("#content");
 
 let textArray = [["text", "file.txt"]];
-let page = 1;
-let fileName = "";
+let fileName = "", page = 1;
 
 function saveBookmark() {
-  if (fileName) {
-    if (page == 1 || page >= textArray.length - 1) localStorage.removeItem(`bookmark_${fileName}`);
-    else localStorage.setItem(`bookmark_${fileName}`, page);
-  }
+  if (page === 1 || page >= textArray.length - 1) localStorage.removeItem(`bookmark_${fileName}`);
+  else localStorage.setItem(`bookmark_${fileName}`, page);
 }
 
 function loadBookmark() {
-  if (fileName) return Number(localStorage.getItem(`bookmark_${fileName}`)) || 1;
-  return 1;
+  return Number(localStorage.getItem(`bookmark_${fileName}`)) || 1;
 }
 
 function getBookmarks() {
   let bookmarks = [];
   for (const key of Object.keys(localStorage)) {
     if (key.startsWith("bookmark_")) {
-      let fName = key.replace("bookmark_", "");
-      let pNum = localStorage.getItem(key);
-      bookmarks.push({ fileName: fName, page: pNum });
+      bookmarks.push({
+        fileName: key.replace("bookmark_", ""),
+        page: localStorage.getItem(key)
+      });
     }
   }
   bookmarks.sort((a, b) => a.fileName.localeCompare(b.fileName));
@@ -35,16 +32,25 @@ function getBookmarks() {
 function updatePage() {
   if (textArray.length === 1) {
     title.innerText = "viewer";
-    status.innerText = "저장된 책갈피 목록";
+    subtitle.innerText = "저장된 책갈피 목록";
     let bookmarks = getBookmarks();
-    let text = "";
-    bookmarks.forEach((b, idx) => {
-      text += `${b.fileName} - ${b.page}화\n`;
+    content.innerHTML = "";
+    bookmarks.forEach((b) => {
+      const elem = document.createElement("div");
+      elem.innerText = `${b.fileName} - ${b.page}화\n`;
+      elem.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (confirm(`erase ${b.fileName}?`)) {
+          localStorage.removeItem(`bookmark_${b.fileName}`);
+          updatePage();
+        }
+      });
+      content.appendChild(elem);
     });
-    content.innerText = text;
   } else {
-    title.innerText = `viewer - ${fileName}`;
-    status.innerText = `${page} / ${textArray.length - 1}`;
+    title.innerText = fileName;
+    subtitle.innerText = `${page} / ${textArray.length - 1}`;
     content.innerText = textArray[page][0];
   }
 }
@@ -58,12 +64,11 @@ function flipPage(newPage = page) {
 }
 
 fileInput.addEventListener("change", async () => {
-  textArray = [["text", "file.txt"]];
-  page = 1;
   const file = fileInput.files[0];
-  fileName = file.name.replace(/\.[^/.]+$/, "");
-  const fileExt = file.name.match(/\.([^.]+)$/)?.[1] ?? "";
-  switch (fileExt) {
+  textArray = [["text", "file.txt"]];
+  fileName = file.name.replace(/\.[^\.]+$/, "");
+  page = 1;
+  switch (file.name.match(/\.([^\.]+)$/)[1]) {
     case "zip":
       const zip = new JSZip();
       const zipContent = await zip.loadAsync(file);
@@ -85,21 +90,17 @@ fileInput.addEventListener("change", async () => {
       }
       break;
     case "json":
-      const reader = new FileReader();
-      reader.onload = () => {
-        JSON.parse(reader.result).forEach(({ fileName, page }) => {
-          const key = `bookmark_${fileName}`;
-          const saved = Number(localStorage.getItem(key)) || 1;
-          console.log(`${key}: ${page}, ${saved}`);
-          if (Number(page) > saved) localStorage.setItem(key, page);
-        });
-        updatePage();
-      };
-      reader.readAsText(file);
-      break
+      const text = await file.text();
+      for (const { fileName, page } of JSON.parse(text)) {
+        const key = `bookmark_${fileName}`;
+        const saved = Number(localStorage.getItem(key)) || 1;
+        console.log(`${key}: ${page}, ${saved}`);
+        if (Number(page) > saved) localStorage.setItem(key, page);
+      }
+      updatePage();
+      break;
   }
-  page = loadBookmark();
-  flipPage();
+  flipPage(loadBookmark());
 });
 
 window.addEventListener("pageshow", () => {
@@ -118,13 +119,13 @@ document.addEventListener("contextmenu", (e) => {
     let bookmarks = getBookmarks();
     const blob = new Blob([JSON.stringify(bookmarks)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = "web_text_viewer_data.json";
     a.click();
     URL.revokeObjectURL(url);
   } else {
-    let newPage = parseInt(prompt("goto", page), 10);
+    let newPage = Number(prompt("goto", page)) || 0;
     flipPage(newPage);
   }
 });

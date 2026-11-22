@@ -1,28 +1,29 @@
 <!DOCTYPE html>
-<html lang="ko" oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+<html lang="ko">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#F0F0F0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/favicon.svg">
   <title>viewer</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
   <input type="file" id="file" accept=".zip, .epub, .json" hidden>
   <div id="container">
-    <div id="status">- / -화</div>
+    <div id="subtitle">- / -화</div>
     <div id="content"></div>
-    <div id="status">&nbsp;</div>
+    <div id="footer">&nbsp;</div>
   </div>
-  <script src="jszip.min.js"></script>
-  <script src="epub.min.js"></script>
-  <script src="script.js"></script>
+  <script src="js/lib/jszip.min.js"></script>
+  <script src="js/lib/epub.min.js"></script>
+  <script src="js/script.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
-      });
+      navigator.serviceWorker.register("sw.js");
     }
   </script>
 </body>
